@@ -36,8 +36,8 @@ export async function POST(req) {
     const payload = JSON.stringify(data);
     const payloadMain = Buffer.from(payload).toString("base64");
     const keyIndex = 1;
-    const string = payloadMain + "/pg/v1/pay" + salt_key;
-    const sha256 = crypto.createHash("sha256").update(string).digest("hex");
+    const string = payloadMain + "/pg/v1/pay";
+    const sha256 = crypto.createHmac("sha256", salt_key).update(string).digest("hex");
     const checksum = sha256 + "###" + keyIndex;
 
     console.log("Merchant ID:", merchant_id);

@@ -18,8 +18,8 @@ export async function POST(req) {
     console.log("Request query parameters:", Array.from(searchParams.entries()));
 
     const keyIndex = 1;
-    const stringToHash = `/pg/v1/status/${merchantId}/${clientTransactionId}` + saltKey;
-    const checksum = crypto.createHash("sha256").update(stringToHash).digest("hex") + "###" + keyIndex;
+    const stringToHash = `/pg/v1/status/${merchantId}/${clientTransactionId}`;
+    const checksum = crypto.createHmac("sha256", saltKey).update(stringToHash).digest("hex") + "###" + keyIndex;
 
     console.log("String for hash:", stringToHash);
     console.log("Checksum:", checksum);

@@ -20,13 +20,13 @@ export async function POST(req) {
       merchantTransactionId: merchantTransactionId,
       merchantUserId: reqData.name || "MUID" + Date.now(),
       amount: reqData.amount * 100, // Convert amount to smallest unit (e.g., paise)
-      redirectUrl: `http://localhost:3000/api/status?id=${merchantTransactionId}`,
-      // For production, change localhost to your domain:
-      // redirectUrl: `https://yourdomain.com/api/status?id=${merchantTransactionId}`,
+      redirectUrl: `https://lalit-bhai-new-main.vercel.app/api/status?id=${merchantTransactionId}`,
+      // For localhost testing:
+      // redirectUrl: `http://localhost:3000/api/status?id=${merchantTransactionId}`,
       redirectMode: "POST",
-      callbackUrl: `http://localhost:3000/api/status?id=${merchantTransactionId}`,
-      // For production, change localhost to your domain:
-      // callbackUrl: `https://yourdomain.com/api/status?id=${merchantTransactionId}`,
+      callbackUrl: `https://lalit-bhai-new-main.vercel.app/api/status?id=${merchantTransactionId}`,
+      // For localhost testing:
+      // callbackUrl: `http://localhost:3000/api/status?id=${merchantTransactionId}`,
       mobileNumber: reqData.phone,
       paymentInstrument: {
         type: "PAY_PAGE",

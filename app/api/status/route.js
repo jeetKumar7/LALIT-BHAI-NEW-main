@@ -75,17 +75,17 @@ export async function POST(req) {
         details: JSON.stringify(orderData.details), // Stringify nested objects
       }).toString();
 
-      return NextResponse.redirect(`http://localhost:3000/success?${queryParams}`, {
-        // For production, change localhost to your domain:
-        // return NextResponse.redirect(`https://yourdomain.com/success?${queryParams}`, {
+      return NextResponse.redirect(`https://lalit-bhai-new-main.vercel.app/success?${queryParams}`, {
+        // For localhost testing:
+        // return NextResponse.redirect(`http://localhost:3000/success?${queryParams}`, {
         status: 301,
       });
     } else {
       console.error("Payment failed:", response.data);
 
-      return NextResponse.redirect("http://localhost:3000/failed", {
-        // For production, change localhost to your domain:
-        // return NextResponse.redirect("https://yourdomain.com/failed", {
+      return NextResponse.redirect("https://lalit-bhai-new-main.vercel.app/failed", {
+        // For localhost testing:
+        // return NextResponse.redirect("http://localhost:3000/failed", {
         status: 301,
       });
     }

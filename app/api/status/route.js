@@ -10,7 +10,7 @@ const UAT_CONFIG = {
   saltKey: "96434309-7796-489d-8924-ab56988a6076",
   merchantId: "PGTESTPAYUAT86",
   api_base_url: "https://api-preprod.phonepe.com/apis/pg-sandbox",
-  base_redirect_url: "http://localhost:3000",
+  base_redirect_url: "https://lalit-bhai-new-main.vercel.app",
   use_hmac: false, // UAT uses plain SHA256
 };
 

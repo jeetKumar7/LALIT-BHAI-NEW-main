@@ -89,7 +89,7 @@ export default function Home() {
       await writeTempOrder(data);
 
       // Send data to backend for payment initiation
-      const response = await axios.post("https://localhost:3000/api/order", data);
+      const response = await axios.post("http://localhost:3000/api/order", data);
 
       if (response.data && response.data.data.instrumentResponse.redirectInfo.url) {
         window.location.href = response.data.data.instrumentResponse.redirectInfo.url;
@@ -173,15 +173,17 @@ function InputField({ label, id, value, setValue, required, placeholder = "" }) 
 function AddressFields({ address, handleAddressChange }) {
   return (
     <>
-      {["addressLine1", "addressLine2", "addressLine3", "pincode", "landmark", "state"].map((field) => (
-        <InputField
-          key={field}
-          label={field.replace(/([A-Z])/g, " $1")}
-          id={field}
-          value={address[field]}
-          setValue={(value) => handleAddressChange({ target: { name: field, value } })}
-        />
-      ))}
+      {["addressLine1", "addressLine2", "addressLine3", "pincode", "landmark", "state"].map(
+        (field) => (
+          <InputField
+            key={field}
+            label={field.replace(/([A-Z])/g, " $1")}
+            id={field}
+            value={address[field]}
+            setValue={(value) => handleAddressChange({ target: { name: field, value } })}
+          />
+        )
+      )}
     </>
   );
 }

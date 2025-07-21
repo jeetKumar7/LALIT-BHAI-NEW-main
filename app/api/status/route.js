@@ -2,13 +2,8 @@ import crypto from "crypto";
 import axios from "axios";
 import { NextResponse } from "next/server";
 
-// Test PhonePe credentials (commented out)
 const saltKey = "96434309-7796-489d-8924-ab56988a6076";
 const merchantId = "PGTESTPAYUAT86";
-
-// Production PhonePe credentials
-// const saltKey = "20e6b59f-68b8-474b-a96e-f45f2fc1e669";
-// const merchantId = "SU250625182229310346275";
 
 export async function POST(req) {
   try {
@@ -18,22 +13,15 @@ export async function POST(req) {
     console.log("Request query parameters:", Array.from(searchParams.entries()));
 
     const keyIndex = 1;
-    const stringToHash = `/pg/v1/status/${merchantId}/${clientTransactionId}`;
-    // For UAT/Sandbox - using HMAC-SHA256 (recommended and secure)
-    const checksum = crypto.createHmac("sha256", saltKey).update(stringToHash).digest("hex") + "###" + keyIndex;
-
-    // Alternative for some UAT environments - plain SHA256 (less secure, try if HMAC fails)
-    // const checksum = crypto.createHash("sha256").update(stringToHash + saltKey).digest("hex") + "###" + keyIndex;
+    const stringToHash = `/pg/v1/status/${merchantId}/${clientTransactionId}` + saltKey;
+    const checksum = crypto.createHash("sha256").update(stringToHash).digest("hex") + "###" + keyIndex;
 
     console.log("String for hash:", stringToHash);
     console.log("Checksum:", checksum);
 
     const options = {
       method: "GET",
-      // Sandbox URL (for testing):
       url: `https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/status/${merchantId}/${clientTransactionId}`,
-      // Production URL:
-      // url: `https://api.phonepe.com/apis/hermes/pg/v1/status/${merchantId}/${clientTransactionId}`,
       headers: {
         accept: "application/json",
         "Content-Type": "application/json",
@@ -79,16 +67,12 @@ export async function POST(req) {
         details: JSON.stringify(orderData.details), // Stringify nested objects
       }).toString();
 
-      // return NextResponse.redirect(`https://lalit-bhai-new-main.vercel.app/success?${queryParams}`, {
-      // For localhost testing:
       return NextResponse.redirect(`http://localhost:3000/success?${queryParams}`, {
         status: 301,
       });
     } else {
       console.error("Payment failed:", response.data);
 
-      // return NextResponse.redirect("https://lalit-bhai-new-main.vercel.app/failed", {
-      // For localhost testing:
       return NextResponse.redirect("http://localhost:3000/failed", {
         status: 301,
       });

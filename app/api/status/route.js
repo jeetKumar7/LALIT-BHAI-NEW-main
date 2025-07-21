@@ -2,8 +2,29 @@ import crypto from "crypto";
 import axios from "axios";
 import { NextResponse } from "next/server";
 
-const saltKey = "96434309-7796-489d-8924-ab56988a6076";
-const merchantId = "PGTESTPAYUAT86";
+// Configuration - Set isProduction to true for production, false for UAT
+const isProduction = false;
+
+// UAT/Sandbox Configuration
+const UAT_CONFIG = {
+  saltKey: "96434309-7796-489d-8924-ab56988a6076",
+  merchantId: "PGTESTPAYUAT86",
+  api_base_url: "https://api-preprod.phonepe.com/apis/pg-sandbox",
+  base_redirect_url: "http://localhost:3000",
+  use_hmac: false, // UAT uses plain SHA256
+};
+
+// Production Configuration
+const PROD_CONFIG = {
+  saltKey: "20e6b59f-68b8-474b-a96e-f45f2fc1e669",
+  merchantId: "SU250625182229310346275",
+  api_base_url: "https://api.phonepe.com/apis/hermes",
+  base_redirect_url: "https://lalit-bhai-new-main.vercel.app",
+  use_hmac: true, // Production uses HMAC-SHA256
+};
+
+// Current active configuration
+const config = isProduction ? PROD_CONFIG : UAT_CONFIG;
 
 export async function POST(req) {
   try {
@@ -13,20 +34,32 @@ export async function POST(req) {
     console.log("Request query parameters:", Array.from(searchParams.entries()));
 
     const keyIndex = 1;
-    const stringToHash = `/pg/v1/status/${merchantId}/${clientTransactionId}` + saltKey;
-    const checksum = crypto.createHash("sha256").update(stringToHash).digest("hex") + "###" + keyIndex;
+    const stringToHash = `/pg/v1/status/${config.merchantId}/${clientTransactionId}` + config.saltKey;
 
+    // Generate checksum based on environment
+    const checksum = config.use_hmac
+      ? crypto
+          .createHmac("sha256", config.saltKey)
+          .update(`/pg/v1/status/${config.merchantId}/${clientTransactionId}`)
+          .digest("hex") +
+        "###" +
+        keyIndex
+      : crypto.createHash("sha256").update(stringToHash).digest("hex") + "###" + keyIndex;
+
+    console.log("Environment:", isProduction ? "PRODUCTION" : "UAT/SANDBOX");
+    console.log("Merchant ID:", config.merchantId);
+    console.log("Hashing Method:", config.use_hmac ? "HMAC-SHA256" : "Plain SHA256");
     console.log("String for hash:", stringToHash);
     console.log("Checksum:", checksum);
 
     const options = {
       method: "GET",
-      url: `https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/status/${merchantId}/${clientTransactionId}`,
+      url: `${config.api_base_url}/pg/v1/status/${config.merchantId}/${clientTransactionId}`,
       headers: {
         accept: "application/json",
         "Content-Type": "application/json",
         "X-VERIFY": checksum,
-        "X-MERCHANT-ID": merchantId,
+        "X-MERCHANT-ID": config.merchantId,
       },
     };
 
@@ -67,13 +100,13 @@ export async function POST(req) {
         details: JSON.stringify(orderData.details), // Stringify nested objects
       }).toString();
 
-      return NextResponse.redirect(`http://localhost:3000/success?${queryParams}`, {
+      return NextResponse.redirect(`${config.base_redirect_url}/success?${queryParams}`, {
         status: 301,
       });
     } else {
       console.error("Payment failed:", response.data);
 
-      return NextResponse.redirect("http://localhost:3000/failed", {
+      return NextResponse.redirect(`${config.base_redirect_url}/failed`, {
         status: 301,
       });
     }

@@ -3,7 +3,7 @@ import axios from "axios";
 import { NextResponse } from "next/server";
 
 // Configuration - Set isProduction to true for production, false for UAT
-const isProduction = false;
+const isProduction = true;
 
 // UAT/Sandbox Configuration
 const UAT_CONFIG = {

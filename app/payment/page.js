@@ -89,7 +89,7 @@ export default function Home() {
       await writeTempOrder(data);
 
       // Send data to backend for payment initiation
-      const response = await axios.post("https://lalit-bhai-new-main.vercel.app/api/order", data);
+      const response = await axios.post("https://localhost:3000/api/order", data);
 
       if (response.data && response.data.data.instrumentResponse.redirectInfo.url) {
         window.location.href = response.data.data.instrumentResponse.redirectInfo.url;

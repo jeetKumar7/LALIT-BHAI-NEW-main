@@ -17,7 +17,7 @@ const UAT_CONFIG = {
 // Production Configuration
 const PROD_CONFIG = {
   salt_key: "20e6b59f-68b8-474b-a96e-f45f2fc1e669",
-  merchant_id: "SU250625182229310346275",
+  merchant_id: "SU2506251822293103462755",
   api_url: "https://api.phonepe.com/apis/hermes/pg/v1/pay",
   base_redirect_url: "https://lalit-bhai-new-main.vercel.app",
   use_hmac: true, // Production uses HMAC-SHA256

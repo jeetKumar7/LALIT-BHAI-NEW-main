@@ -2,8 +2,9 @@ import axios from "axios";
 import crypto from "crypto";
 import { NextResponse } from "next/server";
 
-
-const isProduction = true;
+// Configuration - Use environment variable
+// Temporarily set to false for testing
+const isProduction = false; // Change this to test with UAT
 
 // UAT/Sandbox Configuration
 const UAT_CONFIG = {
@@ -14,11 +15,11 @@ const UAT_CONFIG = {
   use_hmac: false, // UAT uses plain SHA256
 };
 
-// Production Configuration
+// Production Configuration - Updated
 const PROD_CONFIG = {
   salt_key: "20e6b59f-68b8-474b-a96e-f45f2fc1e669",
   merchant_id: "SU2506251822293103462755",
-  api_url: "https://api.phonepe.com/apis/hermes/pg/v1/pay",
+  api_url: "https://api.phonepe.com/apis/pg/v1/pay", // Changed URL
   base_redirect_url: "https://lalit-bhai-new-main.vercel.app",
   use_hmac: true, // Production uses HMAC-SHA256
 };
@@ -29,21 +30,27 @@ const config = isProduction ? PROD_CONFIG : UAT_CONFIG;
 export async function POST(req) {
   try {
     const reqData = await req.json();
-    
+
     // Log incoming data for debugging
     console.log("Incoming request data:", reqData);
-    
+
     const merchantTransactionId = reqData.transactionId;
 
     // Validate required fields
     if (!reqData.transactionId) {
-      return NextResponse.json({ error: "Missing transactionId" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing transactionId" },
+        { status: 400 }
+      );
     }
     if (!reqData.amount || reqData.amount <= 0) {
       return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
     }
     if (!reqData.mobile) {
-      return NextResponse.json({ error: "Missing mobile number" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing mobile number" },
+        { status: 400 }
+      );
     }
 
     const data = {
@@ -78,7 +85,19 @@ export async function POST(req) {
     console.log("Environment:", isProduction ? "PRODUCTION" : "UAT/SANDBOX");
     console.log("Merchant ID:", config.merchant_id);
     console.log("API URL:", config.api_url);
-    console.log("Hashing Method:", config.use_hmac ? "HMAC-SHA256" : "Plain SHA256");
+    console.log("Request URL:", config.api_url);
+    console.log("Request Headers:", {
+      "X-VERIFY": checksum,
+      "X-MERCHANT-ID": config.merchant_id,
+      "Content-Type": "application/json",
+    });
+    console.log("Request Data:", {
+      request: payloadMain,
+    });
+    console.log(
+      "Hashing Method:",
+      config.use_hmac ? "HMAC-SHA256" : "Plain SHA256"
+    );
 
     // Only log sensitive data in development
     if (!isProduction) {
@@ -105,6 +124,19 @@ export async function POST(req) {
 
     const response = await axios(options);
     console.log("PhonePe Response:", response.data);
+
+    // Check if PhonePe returned an error
+    if (response.data && response.data.success === false) {
+      console.error("PhonePe API Error:", response.data);
+      return NextResponse.json(
+        {
+          error: "PhonePe API Error",
+          details: response.data.message || "Payment gateway error",
+          phonepeError: response.data,
+        },
+        { status: 400 }
+      );
+    }
 
     return NextResponse.json(response.data);
   } catch (error) {

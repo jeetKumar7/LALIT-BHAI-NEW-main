@@ -2,7 +2,7 @@ import axios from "axios";
 import crypto from "crypto";
 import { NextResponse } from "next/server";
 
-// Configuration - Set isProduction to true for production, false for UAT
+
 const isProduction = true;
 
 // UAT/Sandbox Configuration
@@ -29,7 +29,22 @@ const config = isProduction ? PROD_CONFIG : UAT_CONFIG;
 export async function POST(req) {
   try {
     const reqData = await req.json();
+    
+    // Log incoming data for debugging
+    console.log("Incoming request data:", reqData);
+    
     const merchantTransactionId = reqData.transactionId;
+
+    // Validate required fields
+    if (!reqData.transactionId) {
+      return NextResponse.json({ error: "Missing transactionId" }, { status: 400 });
+    }
+    if (!reqData.amount || reqData.amount <= 0) {
+      return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
+    }
+    if (!reqData.mobile) {
+      return NextResponse.json({ error: "Missing mobile number" }, { status: 400 });
+    }
 
     const data = {
       merchantId: config.merchant_id,
@@ -39,7 +54,7 @@ export async function POST(req) {
       redirectUrl: `${config.base_redirect_url}/api/status?id=${merchantTransactionId}`,
       redirectMode: "POST",
       callbackUrl: `${config.base_redirect_url}/api/status?id=${merchantTransactionId}`,
-      mobileNumber: reqData.phone,
+      mobileNumber: reqData.mobile, // Fixed: Changed from reqData.phone to reqData.mobile
       paymentInstrument: {
         type: "PAY_PAGE",
       },
@@ -62,13 +77,17 @@ export async function POST(req) {
 
     console.log("Environment:", isProduction ? "PRODUCTION" : "UAT/SANDBOX");
     console.log("Merchant ID:", config.merchant_id);
-    console.log("Salt Key:", config.salt_key);
     console.log("API URL:", config.api_url);
     console.log("Hashing Method:", config.use_hmac ? "HMAC-SHA256" : "Plain SHA256");
-    console.log("Payload being sent:", payload);
-    console.log("Base64 Payload:", payloadMain);
-    console.log("String for hash:", string);
-    console.log("Checksum:", checksum);
+
+    // Only log sensitive data in development
+    if (!isProduction) {
+      console.log("Salt Key:", config.salt_key);
+      console.log("Payload being sent:", payload);
+      console.log("Base64 Payload:", payloadMain);
+      console.log("String for hash:", string);
+      console.log("Checksum:", checksum);
+    }
 
     const options = {
       method: "POST",
